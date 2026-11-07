@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -6,7 +5,6 @@
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-  <!-- 瀏覽器快取控制（輔助措施） -->
   <meta http-equiv="Cache-Control"
         content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -16,9 +14,7 @@
 
   <title>729群組簽到</title>
 
-  <!-- LINE LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js">
-  </script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
   <style>
     body {
@@ -101,36 +97,29 @@
 
     <small id="detail"></small>
 
-    <!-- LINE 登入重試 -->
     <button id="loginRetry" hidden>
       重新連結 LINE
     </button>
 
-    <!-- 重新開啟簽到頁面 -->
-    <a id="restartLiff" hidden
-       target="_top">
+    <a id="restartLiff" hidden target="_top">
       重新開啟簽到頁面
     </a>
 
-    <!-- LINE 身分確認成功 -->
     <section id="profileSection" hidden>
-
-      <p id="profileName"></p>
 
       <button id="openForm">
         前往簽到
       </button>
 
       <a id="formFallback"
+         hidden
          target="_top"
          rel="noopener noreferrer">
-        如果無法開啟簽到表單，請點擊這裡
       </a>
 
     </section>
 
   </main>
-
 
 <script>
 (() => {
@@ -144,16 +133,13 @@
   const LIFF_URL =
     'https://liff.line.me/' + LIFF_ID;
 
-  // 替換成自己的 Google 表單 viewform 網址
   const FORM_BASE_URL =
-  'https://docs.google.com/forms/d/e/1FAIpQLSfSLhFDVZJoFhl3y2n87DRSLYR7IcgqXzuLqz_wUmn_EcFPJA/viewform';
+    'https://docs.google.com/forms/d/e/1FAIpQLSfSLhFDVZJoFhl3y2n87DRSLYR7IcgqXzuLqz_wUmn_EcFPJA/viewform';
 
   const NAME_ENTRY_ID = 'entry.1398967371';
 
-  // 初始化最多等待 25 秒
   const INIT_TIMEOUT = 25000;
 
-  // 防止登入重複執行
   const LOGIN_KEY = 'liff_login_attempt_' + LIFF_ID;
 
   let finalFormUrl = '';
@@ -179,9 +165,6 @@
   const profileSection =
     document.getElementById('profileSection');
 
-  const profileName =
-    document.getElementById('profileName');
-
   const openFormButton =
     document.getElementById('openForm');
 
@@ -194,39 +177,29 @@
   // ======================================
 
   function setStatus(message, detail = '') {
-
     statusElement.textContent = message;
     detailElement.textContent = detail;
-
   }
 
-
   function showLoginRetry(message) {
-
     setStatus(message);
-
     loginRetryButton.hidden = false;
-
   }
 
 
   // ======================================
-  // 4. 安全操作 SessionStorage
+  // 4. SessionStorage
   // ======================================
 
   function getLoginAttempt() {
-
     try {
       return sessionStorage.getItem(LOGIN_KEY);
     } catch (error) {
       return null;
     }
-
   }
 
-
   function setLoginAttempt() {
-
     loginAttemptedInThisPage = true;
 
     try {
@@ -234,12 +207,9 @@
     } catch (error) {
       console.warn('SessionStorage unavailable');
     }
-
   }
 
-
   function clearLoginAttempt() {
-
     loginAttemptedInThisPage = false;
 
     try {
@@ -247,7 +217,6 @@
     } catch (error) {
       console.warn('SessionStorage unavailable');
     }
-
   }
 
 
@@ -256,12 +225,10 @@
   // ======================================
 
   function withTimeout(promise, ms) {
-
     let timer;
 
     const timeoutPromise = new Promise(
       (resolve, reject) => {
-
         timer = setTimeout(() => {
           reject(
             new Error(
@@ -271,7 +238,6 @@
             )
           );
         }, ms);
-
       }
     );
 
@@ -279,11 +245,8 @@
       Promise.resolve(promise),
       timeoutPromise
     ]).finally(() => {
-
       clearTimeout(timer);
-
     });
-
   }
 
 
@@ -298,13 +261,10 @@
       getLoginAttempt() === '1';
 
     if (alreadyAttempted && !force) {
-
       showLoginRetry(
         'LINE 連線尚未完成，請點擊下方重新連結 LINE。'
       );
-
       return;
-
     }
 
     setLoginAttempt();
@@ -312,19 +272,11 @@
     setStatus('正在連結 LINE，請稍候...');
 
     try {
-
-      // 不指定 redirectUri。
-      // 使用 LINE Developers Console 設定的 Endpoint URL。
       liff.login();
-
     } catch (error) {
-
       clearLoginAttempt();
-
       throw error;
-
     }
-
   }
 
 
@@ -339,21 +291,18 @@
     url.searchParams.set('usp', 'pp_url');
 
     if (NAME_ENTRY_ID) {
-
       url.searchParams.set(
         NAME_ENTRY_ID,
         displayName
       );
-
     }
 
     return url.toString();
-
   }
 
 
   // ======================================
-  // 8. 開啟外部 Google 表單
+  // 8. 開啟 Google 表單
   // ======================================
 
   function openExternalForm() {
@@ -363,8 +312,6 @@
     }
 
     try {
-
-      // 使用 LINE 提供的外部瀏覽器開啟 API
       liff.openWindow({
         url: finalFormUrl,
         external: true
@@ -377,11 +324,8 @@
         error
       );
 
-      // 備用：使用 HTML 連結進行頂層導覽
       formFallback.click();
-
     }
-
   }
 
 
@@ -398,13 +342,9 @@
       clearLoginAttempt();
 
       try {
-
         startLogin(true);
-
       } catch (error) {
-
         handleError(error);
-
       }
 
     }
@@ -412,21 +352,17 @@
 
 
   // ======================================
-  // 9. 主要 LIFF 初始化流程
+  // 9. LIFF 初始化
   // ======================================
 
   async function initLiff() {
 
     if (!window.liff) {
-
       throw new Error(
         'LIFF SDK 載入失敗，請檢查網路連線。'
       );
-
     }
 
-    // 必須在初始化前記錄環境。
-    // isInClient() 可在初始化前使用。
     const inLiffBrowser = liff.isInClient();
 
     setStatus('正在準備簽到...');
@@ -444,38 +380,26 @@
       sdkLoaded: typeof window.liff
     });
 
-    // 使用手動登入流程。
-    // 不啟用自動外部瀏覽器登入，避免重複處理。
     await withTimeout(
 
       Promise.resolve().then(() => {
 
         return liff.init({
-
           liffId: LIFF_ID,
-
           withLoginOnExternalBrowser: false
-
         });
 
       }),
 
       INIT_TIMEOUT
-
     );
 
 
-    // 診斷資訊
     console.info('[LIFF Diagnostics]', {
-
       sdkVersion: liff.getVersion(),
-
       os: liff.getOS(),
-
       isInClient: liff.isInClient(),
-
-      isLoggedIn: liff.isLoggedIn(),
-
+      isLoggedIn: liff.isLoggedIn()
     });
 
 
@@ -487,28 +411,21 @@
 
       if (inLiffBrowser) {
 
-        // LIFF Browser 不可再次呼叫 liff.login()
         setStatus(
           '簽到頁面已開啟，但尚未取得 LINE 登入狀態。'
         );
 
         restartLiffLink.href = LIFF_URL;
-
         restartLiffLink.hidden = false;
 
         return;
-
       }
 
-      // 一般 LINE 內建瀏覽器或外部瀏覽器
       startLogin();
-
       return;
-
     }
 
 
-    // 登入成功，清除登入紀錄
     clearLoginAttempt();
 
 
@@ -516,22 +433,15 @@
     // 11. 取得 LINE Profile
     // ==================================
 
-    setStatus('LINE 已連線，正在確認簽到身分...');
-
     const profile = await withTimeout(
-
       liff.getProfile(),
-
       15000
-
     );
 
     if (!profile || !profile.displayName) {
-
       throw new Error(
         '無法取得 LINE 使用者名稱。'
       );
-
     }
 
 
@@ -545,19 +455,11 @@
 
     formFallback.href = finalFormUrl;
 
-
-    // 顯示資料
-    profileName.textContent =
-      '你好，' + profile.displayName +
-      '！LINE 身分確認成功。';
-
     profileSection.hidden = false;
 
-
-    setStatus(
-      '身分確認完成！',
-      '請點擊下方按鈕，前往簽到表單完成簽到。'
-    );
+    // 隱藏所有成功提示文字
+    setStatus('');
+    detailElement.hidden = true;
 
   }
 
@@ -587,7 +489,6 @@
       '簽到頁面發生錯誤',
       code + message
     );
-
   }
 
 
